@@ -1,4 +1,4 @@
-# Pokémon Swim Championship 🏊
+# Pokémon Swim Championship
 
 Videojuego 2D desarrollado en C++ y Qt Creator como proyecto final del curso Informática II de la Universidad de Antioquia (semestre 2026-1).
 
