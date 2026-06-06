@@ -1,74 +1,105 @@
 # Pokémon Swim Championship 🏊
 
-Videojuego 2D desarrollado en C++ con Qt Creator como proyecto final de Informática II — Universidad de Antioquia, semestre 2026-1.
+Videojuego 2D desarrollado en C++ y Qt Creator como proyecto final del curso Informática II de la Universidad de Antioquia (semestre 2026-1).
 
 ## Descripción
 
-Pokémon Swim Championship es un videojuego de natación enmarcado en el universo Pokémon. El jugador controla a **Totodile** en una competencia acuática de dos niveles contra un rival controlado por inteligencia artificial: **Psyduck**, un agente autónomo que observa el rendimiento del jugador y adapta su estrategia en cada carrera.
+Pokémon Swim Championship es un juego de carreras acuáticas inspirado en el universo Pokémon. El jugador controla a **Totodile** y debe superar diferentes desafíos de natación mientras compite contra **Psyduck**, un rival controlado por el computador.
 
-## Niveles
+El proyecto busca aplicar conceptos vistos durante el semestre, como programación orientada a objetos, estructuras de datos, física básica para videojuegos e inteligencia artificial sencilla.
 
-### Nivel 1 — Piscina Olímpica de Cerulean City
-Vista lateral con scroll horizontal. El jugador mantiene el ritmo de brazadas alternando las teclas **A/D** mientras esquiva Magikarps que saltan en trayectoria parabólica. La velocidad decae por resistencia hidrodinámica si se deja de bracear.
+## Nivel 1: Piscina Olímpica de Cerulean City
 
-- **Física 1:** Resistencia hidrodinámica — `v(t) = v₀ · e^(−k·t)`
-- **Física 2:** Movimiento parabólico del Magikarp — `y = y₀ + vy·t − ½·g·t²`
+En este nivel la cámara sigue al personaje mientras avanza horizontalmente por una piscina olímpica.
 
-### Nivel 2 — Río Safari, Zona Safari
-Vista cenital con timer descendente. El jugador navega un río con corrientes oscilatorias y remolinos que atraen al personaje en espiral. El objetivo es llegar a la meta antes de que el tiempo se agote.
+El jugador debe mantener la velocidad alternando las teclas de movimiento para simular las brazadas de natación. Durante la carrera aparecen Magikarps que saltan fuera del agua y pueden obstaculizar el avance.
 
-- **Física 3:** Corriente oscilatoria — `Fx = A · sin(ω·t)` + componente de avance constante
-- **Física adicional:** Atracción espiral de remolinos (fuerza centrípeta parametrizable)
+Características:
 
-## Personaje: Totodile
+* Movimiento horizontal con desplazamiento de cámara.
+* Pérdida gradual de velocidad cuando el jugador deja de nadar.
+* Magikarps con trayectorias parabólicas.
+* Competencia directa contra Psyduck.
 
-| Rasgo | Efecto |
-|---|---|
-| **Hiperactivo** | Burst de velocidad en los primeros 3 segundos de cada carrera |
-| **Mordedor** | Destruye obstáculos cercanos, pero frena al personaje 2 segundos |
+## Nivel 2: Río Safari
 
-## Agente inteligente: Psyduck
+El segundo nivel se desarrolla en un río de la Zona Safari.
 
-Psyduck implementa un ciclo de cuatro componentes:
+A diferencia del primer nivel, la vista es cenital y el objetivo es llegar a la meta antes de que el tiempo se agote. Durante el recorrido aparecen corrientes y remolinos que modifican el movimiento del personaje.
 
-1. **Percepción** — registra el tiempo total del jugador al finalizar cada carrera
-2. **Razonamiento** — calcula el promedio histórico y detecta si el jugador mejoró o empeoró
-3. **Acción** — ajusta su velocidad base para la siguiente carrera según el análisis
-4. **Aprendizaje** — almacena el historial de tiempos de la sesión para decisiones progresivamente más informadas
+Características:
 
-## Tecnologías
+* Temporizador descendente.
+* Corrientes que afectan la dirección de movimiento.
+* Remolinos que atraen al jugador.
+* Mayor dificultad respecto al primer nivel.
 
-- **Lenguaje:** C++17
-- **GUI:** Qt Creator (Qt 6)
-- **Build:** qmake / `.pro` + Makefile
-- **Contenedores:** STL (`std::vector`, `std::deque`)
-- **RNG:** `std::mt19937` + `std::random_device`
+## Personaje principal: Totodile
 
-## Requisitos técnicos
+Totodile cuenta con dos habilidades especiales:
 
-- Qt 6.x instalado con módulos `QtWidgets` y `QtMultimedia`
-- Compilador `g++` con soporte C++17
-- Sistema operativo: Linux / Windows (probado en Ubuntu 24)
+| Habilidad   | Descripción                                                                   |
+| ----------- | ----------------------------------------------------------------------------- |
+| Hiperactivo | Obtiene un aumento de velocidad durante los primeros segundos de la carrera.  |
+| Mordedor    | Puede destruir obstáculos cercanos, aunque reduce temporalmente su velocidad. |
 
-## Estructura del repositorio
+## Inteligencia artificial de Psyduck
 
-```
+Psyduck funciona como un rival adaptable.
+
+Al finalizar cada carrera registra el tiempo obtenido por el jugador. Con base en los resultados anteriores ajusta su velocidad para la siguiente competencia, haciendo que las carreras sean más competitivas.
+
+Los tiempos se almacenan durante la sesión actual para que el comportamiento del rival cambie a medida que se juegan más partidas.
+
+## Tecnologías utilizadas
+
+* Lenguaje: C++17
+* Framework gráfico: Qt 6
+* Entorno de desarrollo: Qt Creator
+* Estructuras de datos: STL (`vector`, `deque`)
+* Generación aleatoria: `std::mt19937`
+
+## Requisitos
+
+* Qt 6.x
+* Módulos QtWidgets y QtMultimedia
+* Compilador compatible con C++17
+* Windows o Linux
+
+## Compilación y ejecución
+
+1. Abrir el archivo `pokemon_swim.pro` en Qt Creator.
+2. Configurar un kit compatible con Qt 6.
+3. Compilar el proyecto.
+4. Ejecutar el juego desde Qt Creator.
+
+## Estructura del proyecto
+
+```text
 pokemon-swim-championship/
-├── src/               # Código fuente (.h y .cpp)
+├── src/
 ├── assets/
-│   ├── sprites/       # Sprites de personajes y obstáculos
-│   └── sounds/        # Efectos de sonido y música de fondo
-├── docs/              # Documentos de los tres momentos y diagramas
-├── build/             # Ejecutable generado
-├── pokemon_swim.pro   # Archivo de proyecto Qt
+│   ├── sprites/
+│   └── sounds/
+├── docs/
+├── build/
+├── pokemon_swim.pro
 └── README.md
 ```
 
+## Limitaciones actuales
+
+* El historial utilizado por Psyduck solo se conserva durante la ejecución actual del juego.
+* El proyecto ha sido probado principalmente en Ubuntu 24.
+* Algunas mecánicas pueden requerir ajustes adicionales para equilibrar la dificultad.
+
 ## Integrante
 
-- David Salomon Ortiz Romero
+David Salomon Ortiz Romero
 
 ## Curso
 
-Informática II — Facultad de Ingeniería, Universidad de Antioquia  
+Informática II
+Facultad de Ingeniería
+Universidad de Antioquia
 Semestre 2026-1
