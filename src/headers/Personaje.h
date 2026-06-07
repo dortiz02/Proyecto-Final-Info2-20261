@@ -1,19 +1,22 @@
-#include "Personaje.h"
+#pragma once
 
-Personaje::Personaje(float x, float y, float velocidad)
-    : x(x), y(y), velocidad(velocidad), activo(true) {}
+class Personaje {
+public:
+    Personaje(float x, float y, float velocidad);
+    Personaje(const Personaje& otro);           // constructor de copia
+    virtual ~Personaje();
 
-Personaje::Personaje(const Personaje& otro)
-    : x(otro.x), y(otro.y), velocidad(otro.velocidad), activo(otro.activo) {}
+    float getX()         const;
+    float getY()         const;
+    float getVelocidad() const;
+    bool  estaActivo()   const;
+    void  setVelocidad(float v);
 
-Personaje::~Personaje() {}
+    virtual void actualizar(float dt) = 0;
 
-float Personaje::getX()         const { return x; }
-float Personaje::getY()         const { return y; }
-float Personaje::getVelocidad() const { return velocidad; }
-bool  Personaje::estaActivo()   const { return activo; }
-
-void Personaje::setVelocidad(float v) {
-    if (v < 0.0f) v = 0.0f;
-    velocidad = v;
-}
+protected:
+    float x;
+    float y;
+    float velocidad;
+    bool  activo;
+};
