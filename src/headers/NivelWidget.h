@@ -4,6 +4,9 @@
 #include <QPixmap>
 #include <QKeyEvent>
 #include <QPainter>
+#include <QSoundEffect>
+#include <QMediaPlayer>
+#include <QAudioOutput>
 #include "Juego.h"
 
 class NivelWidget : public QWidget {
@@ -30,6 +33,12 @@ private slots:
 private:
     Juego*  juego;
     QTimer* timerLoop;
+
+    QSoundEffect   sfxBite;      // mordedor (WAV, sin dependencia de plugin)
+    QSoundEffect   sfxSplash;    // golpe de Magikarp (WAV)
+
+    QMediaPlayer*  bgmPlayer;
+    QAudioOutput*  bgmAudio;
 
     // Sprites Totodile nivel 1
     QPixmap totIdle;        // quieto
