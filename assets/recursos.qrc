@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>sprites/totodile_sheet.png</file>
+        <file>sprites/magikarp_sheet.png</file>
+        <file>sprites/psyduck_sheet.png</file>
+    </qresource>
+</RCC>
