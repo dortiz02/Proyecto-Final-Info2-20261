@@ -2,6 +2,8 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QMessageBox>
+#include <QPainter>
+#include <QEvent>
 #include <stdexcept>
 
 MainWindow::MainWindow(QWidget* parent)
@@ -33,52 +35,108 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::construirMenu() {
-    pantallaMenu    = new QWidget();
-    QVBoxLayout* l  = new QVBoxLayout(pantallaMenu);
-    l->setAlignment(Qt::AlignCenter);
+    menuBgPixmap.load(":/sprites/menu_bg.png");
 
-    QLabel* titulo = new QLabel("Pokémon Swim Championship");
-    titulo->setAlignment(Qt::AlignCenter);
-    titulo->setStyleSheet("font-size:28px; font-weight:bold; color:#1a3a6a; margin:20px;");
+    // Widget que pinta el fondo escalado en su paintEvent
+    // Usamos una lambda-clase local via QWidget + installEventFilter
+    pantallaMenu = new QWidget();
+    pantallaMenu->setMinimumSize(900, 600);
 
-    QLabel* sub = new QLabel("Compite en las aguas del mundo Pokémon");
-    sub->setAlignment(Qt::AlignCenter);
-    sub->setStyleSheet("font-size:14px; color:#444; margin-bottom:20px;");
+    // Instalar filtro de eventos para pintar el fondo
+    // (evita subclase extra; el fondo se pinta en el evento Paint del pantallaMenu)
+    struct BgPainter : public QObject {
+        QPixmap& bg;
+        BgPainter(QPixmap& p, QObject* parent) : QObject(parent), bg(p) {}
+        bool eventFilter(QObject* obj, QEvent* ev) override {
+            if (ev->type() == QEvent::Paint) {
+                QWidget* w = static_cast<QWidget*>(obj);
+                QPainter painter(w);
+                painter.drawPixmap(w->rect(),
+                    bg.scaled(w->size(), Qt::KeepAspectRatioByExpanding,
+                               Qt::SmoothTransformation));
+                // NO llamar a QObject::eventFilter para que el widget
+                // siga pintando sus hijos encima
+            }
+            return false; // siempre dejar que el evento continúe
+        }
+    };
+    pantallaMenu->installEventFilter(new BgPainter(menuBgPixmap, pantallaMenu));
 
-    QLabel* lblDif = new QLabel("Dificultad del Nivel 1:");
+    // ── Panel central semitransparente ──────────────────────────────────────
+    QWidget* panel = new QWidget(pantallaMenu);
+    panel->setAttribute(Qt::WA_TranslucentBackground, false);
+    panel->setStyleSheet(
+        "QWidget#menuPanel { background: rgba(0,20,60,175); border-radius:16px; }"
+    );
+    panel->setObjectName("menuPanel");
+    panel->setFixedSize(360, 300);
+
+    QVBoxLayout* lp = new QVBoxLayout(panel);
+    lp->setAlignment(Qt::AlignCenter);
+    lp->setSpacing(12);
+    lp->setContentsMargins(28, 24, 28, 24);
+
+    QLabel* lblDif = new QLabel("Dificultad:");
     lblDif->setAlignment(Qt::AlignCenter);
-    lblDif->setStyleSheet("font-size:13px;");
+    lblDif->setStyleSheet("font-size:15px; font-weight:bold; color:#cce8ff; background:transparent;");
 
     comboDificultad = new QComboBox();
     comboDificultad->addItem("Fácil",   1);
     comboDificultad->addItem("Normal",  2);
     comboDificultad->addItem("Difícil", 3);
-    comboDificultad->setFixedWidth(200);
-    comboDificultad->setStyleSheet("font-size:15px; padding:4px;");
+    comboDificultad->setFixedWidth(220);
+    comboDificultad->setStyleSheet(
+        "QComboBox { background:#0a3060; color:white; font-size:14px;"
+        "            padding:5px; border:2px solid #4aa8ff; border-radius:6px; }"
+        "QComboBox QAbstractItemView { background:#0a3060; color:white;"
+        "            selection-background-color:#1a6abf; }"
+    );
 
-    QPushButton* btnJugar = new QPushButton("¡Jugar!");
-    btnJugar->setFixedSize(200, 50);
+    QPushButton* btnJugar = new QPushButton("¡JUGAR!");
+    btnJugar->setFixedSize(220, 52);
     btnJugar->setStyleSheet(
-        "QPushButton{background:#1a7abf;color:white;font-size:18px;border-radius:8px;}"
-        "QPushButton:hover{background:#1560a0;}"
+        "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,"
+        "              stop:0 #2090e0, stop:1 #0a5fa0);"
+        "              color:white; font-size:20px; font-weight:bold;"
+        "              border-radius:10px; border:2px solid #60bfff; }"
+        "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,"
+        "              stop:0 #40b0ff, stop:1 #1070c0); }"
+        "QPushButton:pressed { background:#0a4080; }"
     );
     connect(btnJugar, &QPushButton::clicked, this, &MainWindow::onJugar);
 
     QLabel* controles = new QLabel(
-        "Nivel 1: A/D para bracear | E = Mordedor\n"
-        "Nivel 2: W/A/S/D para moverse | E = Mordedor"
+        "Nivel 1:  A/D bracear · W/S carril · E mordedor\n"
+        "Nivel 2:  W/A/S/D moverse · E mordedor"
     );
     controles->setAlignment(Qt::AlignCenter);
-    controles->setStyleSheet("font-size:12px; color:#666; margin-top:20px;");
+    controles->setStyleSheet("font-size:11px; color:#99ccff; background:transparent;");
 
-    l->addWidget(titulo);
-    l->addWidget(sub);
-    l->addSpacing(10);
-    l->addWidget(lblDif, 0, Qt::AlignCenter);
-    l->addWidget(comboDificultad, 0, Qt::AlignCenter);
-    l->addSpacing(20);
-    l->addWidget(btnJugar, 0, Qt::AlignCenter);
-    l->addWidget(controles);
+    lp->addWidget(lblDif,          0, Qt::AlignCenter);
+    lp->addWidget(comboDificultad, 0, Qt::AlignCenter);
+    lp->addSpacing(8);
+    lp->addWidget(btnJugar,        0, Qt::AlignCenter);
+    lp->addSpacing(4);
+    lp->addWidget(controles,       0, Qt::AlignCenter);
+
+    // Posición inicial centrada (se reajusta en resizeEvent)
+    panel->move((900 - panel->width()) / 2, (600 - panel->height()) / 2 + 40);
+    panel->raise();
+}
+
+void MainWindow::resizeEvent(QResizeEvent* event) {
+    QMainWindow::resizeEvent(event);
+    // Recentrar el panel de controles cuando cambia el tamaño
+    if (pantallaMenu) {
+        QWidget* panel = pantallaMenu->findChild<QWidget*>("menuPanel");
+        if (panel) {
+            int W = event->size().width();
+            int H = event->size().height();
+            panel->move((W - panel->width()) / 2,
+                        (H - panel->height()) / 2 + 40);
+        }
+        pantallaMenu->update(); // forzar repaint del fondo
+    }
 }
 
 void MainWindow::construirPantallaResultado() {
