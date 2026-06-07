@@ -20,6 +20,21 @@ NivelWidget::NivelWidget(Juego* juego, QWidget* parent)
     setFocusPolicy(Qt::StrongFocus);
     setMinimumSize(800, 500);
     connect(timerLoop, &QTimer::timeout, this, &NivelWidget::tick);
+
+    // SFX en WAV: QSoundEffect no necesita plugins externos
+    sfxBite.setSource(QUrl("qrc:/sounds/bite.wav"));
+    sfxBite.setVolume(0.9f);
+    sfxSplash.setSource(QUrl("qrc:/sounds/splash.wav"));
+    sfxSplash.setVolume(0.9f);
+
+    // Música de fondo (MP3 via QMediaPlayer, requiere plugin pero solo para BGM)
+    bgmAudio  = new QAudioOutput(this);
+    bgmPlayer = new QMediaPlayer(this);
+    bgmPlayer->setAudioOutput(bgmAudio);
+    bgmPlayer->setSource(QUrl("qrc:/sounds/bgm.mp3"));
+    bgmPlayer->setLoops(QMediaPlayer::Infinite);
+    bgmAudio->setVolume(0.6f);
+
     cargarSprites();
 }
 
@@ -101,10 +116,17 @@ void NivelWidget::iniciar() {
     jugadorCarrilY = 0.5f;
     jugadorVY = 0.0f;
     timerLoop->start(16);
+    // Reiniciar música desde el principio al comenzar cada nivel
+    bgmPlayer->stop();
+    bgmPlayer->setPosition(0);
+    bgmPlayer->play();
     setFocus();
 }
 
-void NivelWidget::detener() { timerLoop->stop(); }
+void NivelWidget::detener() {
+    timerLoop->stop();
+    bgmPlayer->stop();
+}
 
 void NivelWidget::tick() {
     const float dt = 0.016f;
@@ -112,6 +134,7 @@ void NivelWidget::tick() {
     if (!nivel) return;
 
     float velAntes = nivel->getJugador()->getVelocidad();
+    bool  mordedorAntes = nivel->getJugador()->esMordedorActivo();
     nadando = keyA || keyD;
 
     if (juego->getNivelActualNum() == 1) {
@@ -145,11 +168,16 @@ void NivelWidget::tick() {
 
     juego->actualizar(dt);
 
-    // Detectar golpe por Magikarp
+    // Sonido mordedor: solo en el flanco de activacion (inactivo -> activo)
+    if (!mordedorAntes && nivel->getJugador()->esMordedorActivo())
+        sfxBite.play();
+
+    // Detectar golpe por Magikarp y reproducir splash
     float velDespues = nivel->getJugador()->getVelocidad();
     if (velAntes > 20.0f && velDespues < velAntes * 0.5f && !nivel->getJugador()->esMordedorActivo()) {
         mostrandoHit = true;
         timerHit = 0.5f;
+        sfxSplash.play();
     }
     if (mostrandoHit) {
         timerHit -= dt;
