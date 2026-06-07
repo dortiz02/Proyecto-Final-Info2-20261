@@ -4,6 +4,8 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QComboBox>
+#include <QResizeEvent>
+#include <QPixmap>
 #include "Juego.h"
 #include "NivelWidget.h"
 
@@ -13,6 +15,9 @@ class MainWindow : public QMainWindow {
 public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
+
+protected:
+    void resizeEvent(QResizeEvent* event) override;
 
 private slots:
     void onJugar();
@@ -32,6 +37,8 @@ private:
     QLabel*      labelResultado;
     QPushButton* btnSiguiente;
     QPushButton* btnMenu;
+
+    QPixmap      menuBgPixmap;     // imagen original sin escalar
 
     void construirMenu();
     void construirPantallaResultado();
